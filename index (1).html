@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>GERENCIADOR ÁGUIA | Decisão + Ação</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  :root {
+    --bg-gradient-start: #0A0F1F;
+    --bg-gradient-end: #03050C;
+    --panel-bg: rgba(12, 20, 35, 0.92);
+    --card-bg: rgba(8, 14, 26, 0.8);
+    --border-color: rgba(245, 176, 66, 0.3);
+    --text-primary: #FFFFFF;
+    --text-secondary: #B8C6E6;
+    --accent: #F5B042;
+    --accent-glow: rgba(245, 176, 66, 0.25);
+    --win-color: #2AFF9E;
+    --loss-color: #FF5C7C;
+    --input-bg: #0F1628;
+    --input-border: #2A3A60;
+    --btn-start: linear-gradient(135deg, #F5A623, #F5B042, #FFD27A);
+    --table-row-bg: rgba(12, 20, 35, 0.7);
+  }
+  
+  html, body { width: 100%; height: 100%; overflow-x: hidden; }
+  body {
+    background: radial-gradient(ellipse at 30% 20%, var(--bg-gradient-start), var(--bg-gradient-end));
+    font-family: 'Inter', sans-serif;
+    padding: 20px;
+    min-height: 100%;
+    color: var(--text-primary);
+  }
+  .app-container { max-width: 1400px; width: 100%; margin: 0 auto; }
+  
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+  
+  .hero-section { text-align: center; margin-bottom: 24px; }
+  .badge-pro {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(245, 176, 66, 0.12);
+    padding: 6px 18px; border-radius: 60px; font-size: 11px; font-weight: 600;
+    color: var(--accent); border: 0.5px solid rgba(245,176,66,0.4);
+    margin-bottom: 12px; backdrop-filter: blur(4px);
+  }
+  .main-title {
+    font-size: 42px; font-weight: 800;
+    background: linear-gradient(135deg, #FFFFFF 20%, var(--accent) 70%, #FFE49E);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    letter-spacing: -0.5px;
+  }
+  .sub { 
+    font-size: 13px; 
+    color: var(--text-secondary); 
+    margin-top: 6px;
+    font-style: italic;
+    letter-spacing: 0.5px;
+  }
+  
+  .glass-panel {
+    background: var(--panel-bg); backdrop-filter: blur(16px);
+    border-radius: 36px; border: 1px solid var(--border-color);
+    padding: 26px 28px; margin-bottom: 26px;
+    transition: all 0.3s;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  }
+  .section-label {
+    font-size: 12px; font-weight: 700; letter-spacing: 2.5px;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 22px;
+    border-left: 3px solid var(--accent); padding-left: 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  
+  .config-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 18px; margin-bottom: 24px;
+  }
+  .input-field {
+    background: var(--input-bg); border-radius: 28px; padding: 14px 20px;
+    border: 1px solid var(--input-border); transition: all 0.25s;
+  }
+  .input-field:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); transform: translateY(-1px); }
+  .input-field label {
+    display: block; font-size: 11px; font-weight: 600;
+    color: var(--accent); margin-bottom: 6px; letter-spacing: 0.3px;
+  }
+  .input-field input, .input-field select {
+    background: transparent; border: none; outline: none;
+    color: var(--text-primary); font-size: 22px; font-weight: 700;
+    width: 100%; font-family: 'Inter', monospace;
+  }
+  .input-field select { font-size: 16px; font-weight: 600; cursor: pointer; }
+  .input-field input::placeholder { color: #3A4A6E; font-weight: 500; font-size: 16px; }
+  
+  .btn-start {
+    background: var(--btn-start); border: none; width: 100%;
+    padding: 16px; border-radius: 56px; font-size: 17px; font-weight: 800;
+    color: #0A0F1F; cursor: pointer; display: flex;
+    align-items: center; justify-content: center; gap: 12px;
+    transition: all 0.3s;
+  }
+  .btn-start:hover { transform: scale(1.01); box-shadow: 0 12px 28px rgba(245,176,66,0.4); }
+  
+  .action-buttons {
+    display: flex; gap: 14px; margin-top: 22px; flex-wrap: wrap;
+  }
+  .action-btn {
+    background: rgba(245, 176, 66, 0.12); border: 1px solid var(--border-color);
+    border-radius: 44px; padding: 10px 22px; font-size: 13px; font-weight: 600;
+    color: var(--accent); cursor: pointer; display: inline-flex;
+    align-items: center; gap: 10px; transition: all 0.25s;
+    backdrop-filter: blur(4px);
+  }
+  .action-btn:hover { background: rgba(245, 176, 66, 0.25); transform: translateY(-2px); border-color: var(--accent); }
+  
+  .cards-performance-style {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+  .perf-card {
+    background: linear-gradient(145deg, rgba(12, 20, 35, 0.95), rgba(5, 10, 20, 0.8));
+    border-radius: 28px;
+    padding: 20px 12px;
+    text-align: center;
+    border: 1px solid var(--border-color);
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .perf-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), transparent);
+  }
+  .perf-card:hover { transform: translateY(-4px); border-color: var(--accent); }
+  .perf-card h5 { font-size: 11px; font-weight: 600; color: var(--text-secondary); letter-spacing: 0.8px; margin-bottom: 12px; text-transform: uppercase; }
+  .perf-number { font-size: 24px; font-weight: 800; margin-top: 6px; word-break: break-word; }
+  .perf-icon { font-size: 22px; margin-bottom: 8px; display: block; }
+  .green-value-card { color: var(--win-color) !important; }
+  .red-value-card { color: var(--loss-color) !important; }
+  
+  .stats-row {
+    display: flex;
+    gap: 24px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+  .stats-rapidas {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  .stat-card {
+    background: linear-gradient(135deg, var(--card-bg), rgba(10, 18, 34, 0.9));
+    backdrop-filter: blur(4px);
+    border-radius: 28px; padding: 18px 14px;
+    border: 1px solid var(--border-color);
+    text-align: center;
+    transition: all 0.25s;
+  }
+  .stat-card:hover { transform: translateY(-3px); border-color: var(--accent); }
+  .stat-card h4 { font-size: 11px; color: var(--accent); margin-bottom: 10px; font-weight: 600; letter-spacing: 0.5px; }
+  .stat-card .value { font-size: 24px; font-weight: 800; color: var(--text-primary); word-break: break-word; }
+  .green-value { color: var(--win-color) !important; text-shadow: 0 0 8px rgba(42,255,158,0.3); }
+  .red-value { color: var(--loss-color) !important; text-shadow: 0 0 8px rgba(255,92,124,0.3); }
+  
+  .chart-container {
+    flex: 1.2;
+    min-width: 320px;
+    background: linear-gradient(135deg, rgba(8, 14, 26, 0.7), rgba(5, 10, 20, 0.8));
+    border-radius: 28px;
+    padding: 16px;
+    border: 1px solid var(--border-color);
+    transition: 0.25s;
+  }
+  .chart-container:hover { border-color: var(--accent); }
+  canvas { max-height: 200px; width: 100%; }
+  
+  /* TABELA ORGANIZADA - SEM ROLAGEM HORIZONTAL, BOTÕES AJUSTADOS */
+  .diario-table-wrapper {
+    overflow-x: visible;
+    border-radius: 24px;
+    width: 100%;
+  }
+  .day-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+    table-layout: auto;
+  }
+  .day-table th {
+    text-align: center;
+    padding: 12px 8px;
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+  }
+  .day-table td {
+    padding: 12px 8px;
+    background: var(--table-row-bg);
+    border-radius: 16px;
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 500;
+    text-align: center;
+  }
+  .status-badge {
+    padding: 6px 12px;
+    border-radius: 32px;
+    font-size: 11px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    justify-content: center;
+  }
+  .status-wait { background: rgba(234, 179, 8, 0.15); color: #FFE484; border: 0.5px solid rgba(255, 228, 132, 0.5); }
+  .status-win { background: rgba(42, 255, 158, 0.15); color: var(--win-color); border: 0.5px solid rgba(42, 255, 158, 0.5); }
+  .status-loss { background: rgba(255, 92, 124, 0.15); color: var(--loss-color); border: 0.5px solid rgba(255, 92, 124, 0.5); }
+  
+  .action-group {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .btn-win, .btn-loss {
+    padding: 6px 16px;
+    border-radius: 32px;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 11px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .btn-win {
+    background: linear-gradient(105deg, #0F7B3A, #16B35C);
+    color: white;
+    box-shadow: 0 2px 8px rgba(22,179,92,0.3);
+  }
+  .btn-loss {
+    background: linear-gradient(105deg, #B81C42, #E6395F);
+    color: white;
+    box-shadow: 0 2px 8px rgba(230,57,95,0.3);
+  }
+  .btn-win:hover, .btn-loss:hover { transform: translateY(-1px); filter: brightness(1.05); }
+  
+  .perf-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 18px;
+  }
+  
+  /* RESPONSIVIDADE AJUSTADA - TUDO VISÍVEL */
+  @media (max-width: 1000px) {
+    .cards-performance-style { gap: 15px; }
+    .perf-number { font-size: 20px; }
+    .day-table th, .day-table td { padding: 10px 6px; font-size: 12px; }
+    .btn-win, .btn-loss { padding: 5px 12px; font-size: 10px; }
+    .status-badge { padding: 4px 10px; font-size: 10px; }
+  }
+  @media (max-width: 850px) {
+    .stats-row { flex-direction: column; }
+    .cards-performance-style { grid-template-columns: repeat(2, 1fr); gap: 15px; }
+    .perf-grid { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .glass-panel { padding: 20px 18px; }
+  }
+  @media (max-width: 650px) {
+    .cards-performance-style { grid-template-columns: 1fr 1fr; }
+    .stats-rapidas { grid-template-columns: 1fr; }
+    .perf-grid { grid-template-columns: repeat(2, 1fr); }
+    .action-group { gap: 6px; }
+    .btn-win, .btn-loss { padding: 4px 10px; font-size: 9px; }
+    .day-table th, .day-table td { padding: 8px 4px; font-size: 11px; }
+  }
+  @media (max-width: 550px) {
+    .action-group { flex-direction: column; align-items: center; }
+    .btn-win, .btn-loss { width: 100%; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+<div class="app-container">
+  <div class="hero-section">
+    <div class="badge-pro"><i class="fas fa-eye"></i> VISÃO PRECISA DO SEU CAPITAL</div>
+    <h1 class="main-title">🦅 GERENCIADOR ÁGUIA</h1>
+    <div class="sub"><i class="fas fa-quote-left" style="font-size: 10px; margin-right: 4px;"></i> Decisão + ação mudam destinos <i class="fas fa-quote-right" style="font-size: 10px; margin-left: 4px;"></i></div>
+  </div>
+
+  <div class="glass-panel">
+    <div class="section-label"><i class="fas fa-sliders-h"></i> CONFIGURAÇÕES</div>
+    <div class="config-grid">
+      <div class="input-field"><label><i class="fas fa-coins"></i> CAPITAL (R$)</label><input type="number" id="configCapital" placeholder="Ex: 5000"></div>
+      <div class="input-field"><label><i class="fas fa-percent"></i> ENTRADA (%)</label><input type="number" id="configEntrada" placeholder="Ex: 10"></div>
+      <div class="input-field"><label><i class="fas fa-arrow-up"></i> GAIN (%)</label><input type="number" id="configGain" placeholder="Ex: 20"></div>
+      <div class="input-field"><label><i class="fas fa-arrow-down"></i> STOP (%)</label><input type="number" id="configStop" placeholder="Ex: 10"></div>
+      <div class="input-field"><label><i class="fas fa-chart-line"></i> GESTÃO</label><select id="configTipo"><option value="fixo">📌 Mão Fixa</option><option value="composto">📈 Juros Compostos</option></select></div>
+    </div>
+    <button class="btn-start" id="btnInitGerencia"><i class="fas fa-play"></i> INICIAR GERENCIAMENTO</button>
+    
+    <div class="action-buttons">
+      <button class="action-btn" id="resetDaysBtn"><i class="fas fa-undo-alt"></i> Resetar Dias</button>
+      <button class="action-btn" id="exportCSVBtn"><i class="fas fa-file-export"></i> Exportar CSV</button>
+      <button class="action-btn" id="shareResultsBtn"><i class="fas fa-share-alt"></i> Compartilhar</button>
+      <button class="action-btn" id="backupCloudBtn"><i class="fas fa-cloud-upload-alt"></i> Backup</button>
+      <button class="action-btn" id="restoreCloudBtn"><i class="fas fa-cloud-download-alt"></i> Restaurar</button>
+    </div>
+
+    <div class="cards-performance-style">
+      <div class="perf-card"><i class="fas fa-chart-line perf-icon" style="color: #F5B042;"></i><h5>CAPITAL ATUAL</h5><div class="perf-number" id="displayCapitalAtual">—</div></div>
+      <div class="perf-card"><i class="fas fa-sign-in-alt perf-icon" style="color: #2AFF9E;"></i><h5>ENTRADA (R$)</h5><div class="perf-number green-value-card" id="displayEntradaAtual">—</div></div>
+      <div class="perf-card"><i class="fas fa-arrow-up perf-icon" style="color: #2AFF9E;"></i><h5>META GAIN</h5><div class="perf-number green-value-card" id="displayMetaGain">—</div></div>
+      <div class="perf-card"><i class="fas fa-arrow-down perf-icon" style="color: #FF5C7C;"></i><h5>META STOP</h5><div class="perf-number red-value-card" id="displayMetaStop">—</div></div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stats-rapidas">
+        <div class="stat-card"><h4>📊 WIN RATE</h4><div class="value green-value" id="statWinRate">0%</div></div>
+        <div class="stat-card"><h4>💰 LUCRO LÍQUIDO</h4><div class="value" id="statLucroLiquido">R$ 0</div></div>
+        <div class="stat-card"><h4>🎯 TOTAL OPERADO</h4><div class="value" id="statTotalOp">0</div></div>
+        <div class="stat-card"><h4>⚡ CAPITAL INICIAL</h4><div class="value" id="displayCapitalInicial">—</div></div>
+      </div>
+      <div class="chart-container">
+        <div style="font-size: 11px; color: var(--accent); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;"><i class="fas fa-chart-bar"></i> EVOLUÇÃO DO CAPITAL (BARRAS + TENDÊNCIA)</div>
+        <canvas id="capitalChart" width="400" height="180" style="max-height: 180px; width: 100%;"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="glass-panel">
+    <div class="section-label"><i class="fas fa-calendar-week"></i> REGISTRO DE OPERAÇÕES (30 DIAS)</div>
+    <div class="diario-table-wrapper">
+      <table class="day-table">
+        <thead>
+          <tr>
+            <th style="width: 12%;"># DIA</th>
+            <th style="width: 25%;">STATUS</th>
+            <th style="width: 30%;">CAPITAL (INÍCIO)</th>
+            <th style="width: 33%;">AÇÃO</th>
+          </tr>
+        </thead>
+        <tbody id="diarioBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="glass-panel">
+    <div class="section-label"><i class="fas fa-chart-pie"></i> MÉTRICAS DE PERFORMANCE</div>
+    <div class="perf-grid">
+      <div class="perf-card"><i class="fas fa-trophy perf-icon" style="color: #2AFF9E;"></i><h5>WINS</h5><div class="perf-number green-value-card" id="perfWins">0</div></div>
+      <div class="perf-card"><i class="fas fa-skull perf-icon" style="color: #FF5C7C;"></i><h5>LOSSES</h5><div class="perf-number red-value-card" id="perfLosses">0</div></div>
+      <div class="perf-card"><i class="fas fa-hourglass-half perf-icon" style="color: #FFE484;"></i><h5>PENDENTES</h5><div class="perf-number" id="perfPendentes">0</div></div>
+      <div class="perf-card"><i class="fas fa-fire perf-icon" style="color: #2AFF9E;"></i><h5>MAIOR SEQUÊNCIA WIN</h5><div class="perf-number green-value-card" id="perfBestStreak">0</div></div>
+      <div class="perf-card"><i class="fas fa-chart-line perf-icon" style="color: #FF5C7C;"></i><h5>MAIOR SEQUÊNCIA LOSS</h5><div class="perf-number red-value-card" id="perfWorstStreak">0</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ======================= GERENCIADOR ÁGUIA - VERSÃO FINAL ORGANIZADA =======================
+  let capitalInicial = null, percEntrada = null, percGain = null, percStop = null, tipoGestao = 'fixo';
+  let isInitialized = false;
+  let resultadosDias = new Array(30).fill(null);
+  let currentCapital = 0;
+  let capitalChart = null;
+  
+  let audioContext = null;
+  function initAudio() { if (!audioContext) audioContext = new (window.AudioContext || window.webkitAudioContext)(); }
+  function playSound(type) {
+    try {
+      initAudio();
+      if (audioContext.state === 'suspended') audioContext.resume().then(() => playBeep(type));
+      else playBeep(type);
+    } catch(e) {}
+  }
+  function playBeep(type) {
+    if (!audioContext) return;
+    const now = audioContext.currentTime;
+    const osc = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    osc.connect(gain); gain.connect(audioContext.destination);
+    osc.type = 'sine';
+    osc.frequency.value = type === 'win' ? 880 : 440;
+    gain.gain.value = 0.12;
+    osc.start();
+    gain.gain.exponentialRampToValueAtTime(0.00001, now + 0.25);
+    osc.stop(now + 0.22);
+  }
+  
+  const diarioBody = document.getElementById('diarioBody');
+  const displayCapitalSpan = document.getElementById('displayCapitalAtual');
+  const displayEntradaSpan = document.getElementById('displayEntradaAtual');
+  const displayGainSpan = document.getElementById('displayMetaGain');
+  const displayStopSpan = document.getElementById('displayMetaStop');
+  const displayCapitalInicialSpan = document.getElementById('displayCapitalInicial');
+  const statWinRateSpan = document.getElementById('statWinRate');
+  const statLucroLiquidoSpan = document.getElementById('statLucroLiquido');
+  const statTotalOpSpan = document.getElementById('statTotalOp');
+  const perfWinsSpan = document.getElementById('perfWins');
+  const perfLossesSpan = document.getElementById('perfLosses');
+  const perfPendentesSpan = document.getElementById('perfPendentes');
+  const perfBestStreakSpan = document.getElementById('perfBestStreak');
+  const perfWorstStreakSpan = document.getElementById('perfWorstStreak');
+  
+  const inputCapitalEl = document.getElementById('configCapital');
+  const inputEntradaEl = document.getElementById('configEntrada');
+  const inputGainEl = document.getElementById('configGain');
+  const inputStopEl = document.getElementById('configStop');
+  const selectTipoEl = document.getElementById('configTipo');
+  const btnInitEl = document.getElementById('btnInitGerencia');
+  const resetDaysBtn = document.getElementById('resetDaysBtn');
+  const exportCSVBtn = document.getElementById('exportCSVBtn');
+  const shareResultsBtn = document.getElementById('shareResultsBtn');
+  const backupCloudBtn = document.getElementById('backupCloudBtn');
+  const restoreCloudBtn = document.getElementById('restoreCloudBtn');
+  
+  function formatMoney(v) { return 'R$ ' + v.toLocaleString('pt-BR', { minimumFractionDigits: 2 }); }
+  
+  function getCurrentEntryValue(cap) { return isInitialized ? (tipoGestao === 'fixo' ? (capitalInicial * percEntrada)/100 : (cap * percEntrada)/100) : 0; }
+  function getCurrentGainValue(cap) { return isInitialized ? (tipoGestao === 'fixo' ? (capitalInicial * percGain)/100 : (cap * percGain)/100) : 0; }
+  function getCurrentStopValue(cap) { return isInitialized ? (tipoGestao === 'fixo' ? (capitalInicial * percStop)/100 : (cap * percStop)/100) : 0; }
+  
+  function getCapitalEvolution() {
+    if (!isInitialized) return [];
+    let evolution = [];
+    let cap = capitalInicial;
+    evolution.push(cap);
+    for (let i = 0; i < resultadosDias.length; i++) {
+      if (resultadosDias[i] === 'win') cap += getCurrentGainValue(cap);
+      else if (resultadosDias[i] === 'loss') cap -= getCurrentStopValue(cap);
+      if (cap < 0) cap = 0;
+      evolution.push(cap);
+    }
+    return evolution;
+  }
+  
+  function updateChart() {
+    const evolution = getCapitalEvolution();
+    const ctx = document.getElementById('capitalChart').getContext('2d');
+    if (capitalChart) capitalChart.destroy();
+    if (evolution.length === 0) return;
+    
+    const labels = evolution.map((_, idx) => idx === 0 ? 'Início' : `D${idx}`);
+    const barData = evolution;
+    const barColors = evolution.map((value, idx) => {
+      if (idx === 0) return 'rgba(245, 176, 66, 0.8)';
+      if (value > evolution[idx-1]) return 'rgba(42, 255, 158, 0.7)';
+      if (value < evolution[idx-1]) return 'rgba(255, 92, 124, 0.7)';
+      return 'rgba(245, 176, 66, 0.6)';
+    });
+    
+    const lineGradient = ctx.createLinearGradient(0, 0, 0, 200);
+    lineGradient.addColorStop(0, '#F5B042');
+    lineGradient.addColorStop(1, '#FFD27A');
+    
+    capitalChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Capital (R$) - Barras',
+            type: 'bar',
+            data: barData,
+            backgroundColor: barColors,
+            borderColor: barColors.map(c => c.replace('0.7', '1').replace('0.8', '1')),
+            borderWidth: 1,
+            borderRadius: 6,
+            barPercentage: 0.65,
+            categoryPercentage: 0.8,
+            yAxisID: 'y'
+          },
+          {
+            label: 'Tendência',
+            type: 'line',
+            data: barData,
+            borderColor: lineGradient,
+            borderWidth: 2.5,
+            fill: false,
+            tension: 0.3,
+            pointRadius: 3,
+            pointHoverRadius: 6,
+            pointBackgroundColor: '#F5B042',
+            pointBorderColor: '#FFFFFF',
+            pointBorderWidth: 2,
+            pointStyle: 'circle',
+            yAxisID: 'y'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: { labels: { color: '#B8C6E6', font: { size: 10, weight: 'bold' }, usePointStyle: true }, position: 'top' },
+          tooltip: { backgroundColor: '#0F1628', titleColor: '#F5B042', bodyColor: '#FFFFFF', borderColor: '#F5B042', borderWidth: 1, callbacks: { label: (ctx) => `💰 ${ctx.raw.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}` } }
+        },
+        scales: { 
+          y: { grid: { color: 'rgba(255,255,255,0.08)' }, ticks: { color: '#B8C6E6', callback: (v) => `R$ ${v.toLocaleString('pt-BR')}`, font: { size: 10 } }, title: { display: true, text: 'Valor (R$)', color: '#F5B042', font: { size: 10 } } }, 
+          x: { ticks: { color: '#B8C6E6', maxRotation: 35, autoSkip: true, maxTicksLimit: 8, font: { size: 9 } }, grid: { display: false }, title: { display: true, text: 'Período', color: '#F5B042', font: { size: 10 } } }
+        }
+      }
+    });
+  }
+  
+  function calculateFinalCapital() {
+    if (!isInitialized) return 0;
+    let cap = capitalInicial;
+    for (let i = 0; i < resultadosDias.length; i++) {
+      if (resultadosDias[i] === 'win') cap += getCurrentGainValue(cap);
+      else if (resultadosDias[i] === 'loss') cap -= getCurrentStopValue(cap);
+      if (cap < 0) cap = 0;
+    }
+    return cap;
+  }
+  
+  function calculateStreaks() {
+    let best = 0, worst = 0, currentWin = 0, currentLoss = 0;
+    for (let i = 0; i < resultadosDias.length; i++) {
+      if (resultadosDias[i] === 'win') { currentWin++; currentLoss = 0; best = Math.max(best, currentWin); }
+      else if (resultadosDias[i] === 'loss') { currentLoss++; currentWin = 0; worst = Math.max(worst, currentLoss); }
+      else { currentWin = 0; currentLoss = 0; }
+    }
+    return { best, worst };
+  }
+  
+  function refreshAllStats() {
+    if (!isInitialized) {
+      displayCapitalSpan.innerText = '—'; displayEntradaSpan.innerText = '—';
+      displayGainSpan.innerText = '—'; displayStopSpan.innerText = '—';
+      displayCapitalInicialSpan.innerText = '—';
+      statWinRateSpan.innerText = '0%'; statLucroLiquidoSpan.innerText = 'R$ 0';
+      statTotalOpSpan.innerText = '0';
+      perfWinsSpan.innerText = '0'; perfLossesSpan.innerText = '0';
+      perfPendentesSpan.innerText = '30'; perfBestStreakSpan.innerText = '0';
+      perfWorstStreakSpan.innerText = '0';
+      if (capitalChart) capitalChart.destroy();
+      return;
+    }
+    currentCapital = calculateFinalCapital();
+    displayCapitalSpan.innerText = formatMoney(currentCapital);
+    displayEntradaSpan.innerText = formatMoney(getCurrentEntryValue(currentCapital));
+    displayGainSpan.innerText = formatMoney(getCurrentGainValue(currentCapital));
+    displayStopSpan.innerText = formatMoney(getCurrentStopValue(currentCapital));
+    displayCapitalInicialSpan.innerText = formatMoney(capitalInicial);
+    
+    const wins = resultadosDias.filter(r => r === 'win').length;
+    const losses = resultadosDias.filter(r => r === 'loss').length;
+    const total = wins + losses;
+    const winRate = total > 0 ? ((wins / total) * 100).toFixed(1) : 0;
+    statWinRateSpan.innerText = winRate + '%';
+    const lucro = currentCapital - capitalInicial;
+    statLucroLiquidoSpan.innerText = formatMoney(lucro);
+    statLucroLiquidoSpan.className = lucro >= 0 ? 'value green-value' : 'value red-value';
+    statTotalOpSpan.innerText = total;
+    
+    perfWinsSpan.innerText = wins;
+    perfLossesSpan.innerText = losses;
+    perfPendentesSpan.innerText = resultadosDias.filter(r => r === null).length;
+    
+    const streaks = calculateStreaks();
+    perfBestStreakSpan.innerText = streaks.best;
+    perfWorstStreakSpan.innerText = streaks.worst;
+    
+    updateChart();
+  }
+  
+  function renderDiarioTable() {
+    if (!isInitialized) {
+      diarioBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:48px 20px;"><i class="fas fa-chart-line" style="font-size: 32px; opacity: 0.5; margin-bottom: 12px; display: block;"></i>⚙️ Configure os parâmetros e clique em INICIAR GAIN/META</td></tr>';
+      refreshAllStats();
+      return;
+    }
+    let capCorrente = capitalInicial;
+    let html = '';
+    for (let i = 0; i < resultadosDias.length; i++) {
+      const resultado = resultadosDias[i];
+      let statusHtml = resultado === null ? '<span class="status-badge status-wait"><i class="far fa-clock"></i> Aguardando</span>' :
+                       (resultado === 'win' ? '<span class="status-badge status-win"><i class="fas fa-check-circle"></i> WIN</span>' :
+                       '<span class="status-badge status-loss"><i class="fas fa-times-circle"></i> LOSS</span>');
+      html += `<tr>
+        <td style="font-weight: 700;">${i+1}</td>
+        <td>${statusHtml}</td>
+        <td style="font-weight: 600;">${formatMoney(capCorrente)}</td>
+        <td class="action-group">
+          <button class="btn-win" data-dia="${i}" data-tipo="win"><i class="fas fa-trophy"></i> WIN</button>
+          <button class="btn-loss" data-dia="${i}" data-tipo="loss"><i class="fas fa-ban"></i> LOSS</button>
+        </td>
+      </table>`;
+      if (resultado === 'win') capCorrente += getCurrentGainValue(capCorrente);
+      else if (resultado === 'loss') capCorrente -= getCurrentStopValue(capCorrente);
+      if (capCorrente < 0) capCorrente = 0;
+    }
+    diarioBody.innerHTML = html;
+    currentCapital = capCorrente;
+    refreshAllStats();
+    attachButtonsEvent();
+  }
+  
+  function attachButtonsEvent() {
+    document.querySelectorAll('.btn-win, .btn-loss').forEach(btn => {
+      btn.removeEventListener('click', handleAction);
+      btn.addEventListener('click', handleAction);
+    });
+  }
+  
+  function handleAction(e) {
+    if (!isInitialized) { alert('Inicie o gerenciamento primeiro.'); return; }
+    const btn = e.currentTarget;
+    const dia = parseInt(btn.dataset.dia);
+    const tipo = btn.dataset.tipo;
+    if (resultadosDias[dia] !== null) { alert(`Dia ${dia+1} já registrado.`); return; }
+    resultadosDias[dia] = tipo;
+    playSound(tipo);
+    renderDiarioTable();
+    saveToLocalStorage();
+  }
+  
+  function resetAllDays() { if (confirm('Resetar todos os 30 dias?')) { resultadosDias = new Array(30).fill(null); renderDiarioTable(); saveToLocalStorage(); } }
+  
+  function exportCSV() {
+    if (!isInitialized) { alert('Nenhum dado para exportar.'); return; }
+    let csv = "Dia,Resultado,Capital Acumulado (Início)\n";
+    let cap = capitalInicial;
+    for (let i = 0; i < resultadosDias.length; i++) {
+      csv += `${i+1},${resultadosDias[i] || "pendente"},${cap.toFixed(2)}\n`;
+      if (resultadosDias[i] === 'win') cap += getCurrentGainValue(cap);
+      else if (resultadosDias[i] === 'loss') cap -= getCurrentStopValue(cap);
+      if (cap < 0) cap = 0;
+    }
+    const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `aguia_${new Date().toISOString().slice(0,19)}.csv`;
+    link.click();
+  }
+  
+  async function shareResults() {
+    if (!isInitialized) { alert('Nada para compartilhar.'); return; }
+    const wins = resultadosDias.filter(r => r === 'win').length;
+    const losses = resultadosDias.filter(r => r === 'loss').length;
+    const text = `🦅 GERENCIADOR ÁGUIA\nWin Rate: ${statWinRateSpan.innerText}\nWins: ${wins} | Losses: ${losses}\nCapital Final: ${formatMoney(currentCapital)}\nLucro: ${formatMoney(currentCapital - capitalInicial)}`;
+    if (navigator.share) try { await navigator.share({title: 'Resultados Águia', text}); } catch(e) {}
+    else { navigator.clipboard.writeText(text); alert('✅ Resultados copiados!'); }
+  }
+  
+  function saveToLocalStorage() {
+    if (isInitialized) {
+      localStorage.setItem('aguia_capital', capitalInicial);
+      localStorage.setItem('aguia_entrada', percEntrada);
+      localStorage.setItem('aguia_gain', percGain);
+      localStorage.setItem('aguia_stop', percStop);
+      localStorage.setItem('aguia_tipo', tipoGestao);
+      localStorage.setItem('aguia_resultados', JSON.stringify(resultadosDias));
+    }
+  }
+  
+  function backupCloud() {
+    if (!isInitialized) { alert('Inicie o gerenciamento.'); return; }
+    localStorage.setItem('aguia_cloud_backup', JSON.stringify({ capitalInicial, percEntrada, percGain, percStop, tipoGestao, resultadosDias }));
+    alert('✅ Backup salvo!');
+  }
+  function restoreCloud() {
+    const backup = localStorage.getItem('aguia_cloud_backup');
+    if (backup) {
+      const data = JSON.parse(backup);
+      capitalInicial = data.capitalInicial; percEntrada = data.percEntrada; percGain = data.percGain;
+      percStop = data.percStop; tipoGestao = data.tipoGestao; resultadosDias = data.resultadosDias;
+      isInitialized = true;
+      inputCapitalEl.value = capitalInicial; inputEntradaEl.value = percEntrada;
+      inputGainEl.value = percGain; inputStopEl.value = percStop; selectTipoEl.value = tipoGestao;
+      renderDiarioTable();
+      alert('✅ Restaurado com sucesso!');
+    } else alert('Nenhum backup encontrado.');
+  }
+  
+  function startManagement() {
+    const cap = parseFloat(inputCapitalEl.value);
+    const ent = parseFloat(inputEntradaEl.value);
+    const gain = parseFloat(inputGainEl.value);
+    const stop = parseFloat(inputStopEl.value);
+    if (isNaN(cap) || cap <= 0) { alert('❌ Capital inválido'); return; }
+    if (isNaN(ent) || ent <= 0) { alert('❌ Percentual de entrada inválido'); return; }
+    if (isNaN(gain) || gain <= 0) { alert('❌ Meta Gain inválida'); return; }
+    if (isNaN(stop) || stop <= 0) { alert('❌ Meta Stop inválida'); return; }
+    capitalInicial = cap; percEntrada = ent; percGain = gain; percStop = stop;
+    tipoGestao = selectTipoEl.value; isInitialized = true;
+    resultadosDias = new Array(30).fill(null);
+    renderDiarioTable();
+    saveToLocalStorage();
+  }
+  
+  function inicialVazio() { isInitialized = false; resultadosDias = new Array(30).fill(null); renderDiarioTable(); }
+  
+  btnInitEl.addEventListener('click', startManagement);
+  resetDaysBtn.addEventListener('click', resetAllDays);
+  exportCSVBtn.addEventListener('click', exportCSV);
+  shareResultsBtn.addEventListener('click', shareResults);
+  backupCloudBtn.addEventListener('click', backupCloud);
+  restoreCloudBtn.addEventListener('click', restoreCloud);
+  inicialVazio();
+</script>
+</body>
+</html>
